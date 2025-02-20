@@ -188,5 +188,3 @@ A JWT has three parts separated by dots (`.`):
   - Java: `jjwt`
 
 ---
-
-**Final Note**: Always tailor your authentication strategy to your application’s specific needs, keeping security and user experience in balance.
