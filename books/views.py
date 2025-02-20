@@ -11,24 +11,39 @@ from rest_framework.permissions import AllowAny
 from django.contrib.auth import authenticate
 
 
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from .models import Author, Category, Book
+from .serializers import AuthorSerializer, CategorySerializer, BookSerializer
+from .permissions import IsOwner  # Import custom permission
+
+
 class AuthorViewSet(viewsets.ModelViewSet):
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
+    permission_classes = [IsAuthenticated, IsOwner]  # Ensure only owner can modify
+
+    def get_queryset(self):
+        """Return only the authors owned by the logged-in user."""
+        return Author.objects.filter(user=self.request.user)
+
+    def perform_update(self, serializer):
+        """Ensure only the logged-in user can update their own profile."""
+        serializer.save(user=self.request.user)
+
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = [IsAuthenticated]  # No restriction on category
 
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    # Only authenticated users who own the book can interact with it.
-    permission_classes = [IsAuthenticated, IsBookOwner]
+    permission_classes = [IsAuthenticated, IsOwner]  # Ensure only the owner can modify
 
-    def perform_create(self, serializer):
-        # Automatically assign the book's author based on the logged-in user.
-        # This assumes every User has an associated Author instance.
-        serializer.save(author=self.request.user.author)
+    def get_queryset(self):
+        return Book.objects.filter(user=self.request.user)  # Show only books created by the user
 
 
 from django.contrib.auth.models import User

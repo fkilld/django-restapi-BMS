@@ -9,3 +9,14 @@ class IsBookOwner(BasePermission):
     def has_object_permission(self, request, view, obj):
         # Check if the Book's author corresponds to the logged-in user's associated Author.
         return obj.author == getattr(request.user, 'author', None)
+
+
+
+
+class IsOwner(BasePermission):
+    """
+    Custom permission to allow only the owner of the object to edit or delete it.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        return obj.user == request.user  # Only allow if the current user owns the object
