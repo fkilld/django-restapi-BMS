@@ -1,22 +1,31 @@
-# books/permissions.py
-from rest_framework.permissions import BasePermission
+# Importing BasePermission from Django REST Framework to create custom permissions
+from rest_framework.permissions import BasePermission  
 
-class IsBookOwner(BasePermission):
+# Defining a custom permission class to check if the logged-in user is the owner of a book
+class IsBookOwner(BasePermission):  
     """
     Object-level permission that only allows owners of a book to access or modify it.
     Assumes that each Book's 'author' is linked to a User via an Author instance.
     """
-    def has_object_permission(self, request, view, obj):
-        # Check if the Book's author corresponds to the logged-in user's associated Author.
-        return obj.author == getattr(request.user, 'author', None)
+
+    # Overriding has_object_permission to define object-level access control
+    def has_object_permission(self, request, view, obj):  
+        # Retrieve the currently logged-in user's associated Author instance
+        user_author = getattr(request.user, 'author', None)  
+
+        # Compare the book's author with the logged-in user's Author instance
+        # If they match, the user has permission to access or modify the book
+        return obj.author == user_author  
 
 
-
-
-class IsOwner(BasePermission):
+# Defining another custom permission to check if the logged-in user owns a given object
+class IsOwner(BasePermission):  
     """
     Custom permission to allow only the owner of the object to edit or delete it.
     """
 
-    def has_object_permission(self, request, view, obj):
-        return obj.user == request.user  # Only allow if the current user owns the object
+    # Overriding has_object_permission to define object-level access control
+    def has_object_permission(self, request, view, obj):  
+        # Check if the object's user field matches the currently logged-in user
+        # If they match, the user is allowed to edit or delete the object
+        return obj.user == request.user  
